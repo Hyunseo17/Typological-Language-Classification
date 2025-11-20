@@ -36,5 +36,18 @@
     "k": 3,
     "accuracy": 1.0
   },
-  "grid_search": null
+  "grid_search": {
+    "best_params": {
+      "classifier__C": 2.0,
+      "vectorizer__char__ngram_range": [
+        1,
+        3
+      ],
+      "vectorizer__word__ngram_range": [
+        1,
+        1
+      ]
+    },
+    "best_score": 0.9933333333333333
+  }
 }

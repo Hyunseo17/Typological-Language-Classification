@@ -9,7 +9,7 @@ This repository now focuses on detecting three languages—English, French, and 
 - Deliver interpretable evaluation artifacts: accuracy, confusion matrix, per-language precision/recall/F1, and top-k error analyses.
 
 ### Data Source
-- **WiLI-2018**: Wikipedia Language Identification dataset (235 languages; **exactly 500 samples per language in each of the provided train/test files, i.e. 1 000 total per language**). This project now uses WiLI exclusively—no external augmentation.
+- **WiLI-2018**: Wikipedia Language Identification dataset (235 languages; **exactly 500 samples per language in each of the provided train/test files, i.e. 1 000 total per language**).
 - Utilities provide:
   - `python -m src.data.wili_downloader download` to fetch the official archive from <https://zenodo.org/record/841984>.
   - `python -m src.data.wili_downloader prepare-subset --languages eng,fra,spa --limit-per-language -1` to filter to the three target languages and generate new train/val/test splits (70/15/15 by default). Setting `--limit-per-language -1` consumes all available WiLI rows.
@@ -109,14 +109,5 @@ This repository now focuses on detecting three languages—English, French, and 
 - Sidebar lets you select any artifact in `artifacts/`, view metrics, or upload a CSV to trigger fresh training (with optional grid search).
 - Main panel accepts free-form text, renders top-k predictions as bars/table, and surfaces metadata (language name, family, sample phrase).
 - Tabs supply ready-to-use sample sentences per language for quick sanity checks.
-
-### Next Steps
-1. If you need more data than WiLI provides (1 000 total rows per language), add additional corpora **in a separate branch** and update `languages.yaml` accordingly; the mainline build intentionally limits itself to WiLI.
-2. Introduce alternative classifiers (multilingual transformers, fastText) for comparison against the SVM baseline.
-3. Automate evaluation reports (Markdown/HTML) summarizing metrics, top errors, and indicative n-grams per language.
-4. Ship a lightweight API (FastAPI or Streamlit Cloud) so others can query the model remotely.
-5. Track experiment metadata (MLflow/W&B) to simplify hyperparameter sweeps and artifact versioning.
-
-Feel free to expand feature sets (phonotactic markers, byte-pair encodings, etc.) or swap classifiers if requirements evolve. This scaffold now supports richer experimentation while keeping scope manageable.
 
 # Typological-Language-Classification
