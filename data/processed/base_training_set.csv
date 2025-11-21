@@ -1,0 +1,17 @@
+text,language
+"Hello, how are you today?",eng
+"The weather is nice outside.",eng
+"I love programming and machine learning.",eng
+"This is a simple example sentence.",eng
+"Python is a great programming language.",eng
+"Bonjour, comment allez-vous aujourd'hui ?",fra
+"Le temps est magnifique aujourd'hui.",fra
+"J'aime la programmation et l'apprentissage automatique.",fra
+"Ceci est un exemple de phrase simple.",fra
+"Python est un excellent langage de programmation.",fra
+"Hola, ¿cómo estás hoy?",spa
+"El clima está muy agradable hoy.",spa
+"Me encanta la programación y el aprendizaje automático.",spa
+"Este es un ejemplo de oración simple.",spa
+"Python es un excelente lenguaje de programación.",spa
+

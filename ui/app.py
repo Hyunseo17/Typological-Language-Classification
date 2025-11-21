@@ -62,7 +62,8 @@ def load_metrics(path: Path):
 
 
 @st.cache_resource(show_spinner=False)
-def get_pipeline(model_path: str):
+def get_pipeline(model_path: str, cache_id: str):
+    """Load pipeline with cache keyed on path and unique identifier."""
     return load_pipeline(Path(model_path))
 
 
@@ -120,6 +121,8 @@ with st.sidebar:
                         path=conf_path,
                     )
                     st.success(f"Trained and saved to {output_path.name}")
+                    # Clear cache to ensure newly trained model is loaded
+                    get_pipeline.clear()
                     st.experimental_rerun()
             except Exception as exc:  # noqa: BLE001
                 st.error(f"Training failed: {exc}")
@@ -127,8 +130,18 @@ with st.sidebar:
 pipeline = None
 if artifact_choices:
     try:
-        pipeline = get_pipeline(str(selected_model))
-    except FileNotFoundError:
+        if not selected_model.exists():
+            pipeline = None
+        else:
+            # Use absolute resolved path and modification time to ensure unique cache key
+            # This ensures different models AND retrained models get different cache entries
+            abs_model_path = str(selected_model.resolve())
+            # Include modification time so retrained models are detected
+            mtime = selected_model.stat().st_mtime
+            # Create unique cache identifier combining path and modification time
+            cache_id = f"{abs_model_path}:{mtime:.6f}"
+            pipeline = get_pipeline(abs_model_path, cache_id)
+    except (FileNotFoundError, OSError):
         pipeline = None
 
 if pipeline is None:
