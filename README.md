@@ -110,4 +110,96 @@ This repository now focuses on detecting three languages—English, French, and 
 - Main panel accepts free-form text, renders top-k predictions as bars/table, and surfaces metadata (language name, family, sample phrase).
 - Tabs supply ready-to-use sample sentences per language for quick sanity checks.
 
+### Windows Set-up Instructions
+**Prerequisites**
+- **Python**: Recommended Python `3.11` (Windows). Newer Python versions (e.g., 3.13) may cause binary package conflicts for `numpy`/`scipy`/`scikit-learn` on Windows.
+- **Or Conda**: Installing Miniconda/Anaconda is a robust alternative for the scientific stack.
+- **PowerShell**: These commands are written for `powershell.exe` (Windows PowerShell 5.1+).
+
+**Quick checklist (recommended)**
+- **Install Python 3.11** (or Miniconda)
+- **Create a venv** at the project root: `./.venv`
+- **Activate the venv** and `pip install -r requirements.txt`
+- **Run tests** with `pytest`
+- **Train the sample model** and validate inference
+
+**1) Clone repository (if not already)**
+```powershell
+git clone https://github.com/Hyunseo17/Typological-Language-Classification.git
+Set-Location 'Typological-Language-Classification'
+```
+
+**2) Option A — Install Python 3.11 via winget (recommended on Windows)**
+```powershell
+# Run once (requires Windows Package Manager)
+winget install --id=Python.Python.3.11 -e --accept-package-agreements --accept-source-agreements
+# Verify
+py -3.11 --version
+```
+
+**3) Option B — Use Miniconda (recommended if you already use conda)**
+```powershell
+# After installing Miniconda
+conda create -n tlc python=3.11 -y
+conda activate tlc
+# Install heavy scientific packages from conda-forge
+conda install -c conda-forge numpy scipy scikit-learn pandas matplotlib seaborn -y
+# Then install the remaining requirements via pip
+pip install -r .\requirements.txt
+```
+
+**4) Create & activate a virtual environment (Python 3.11)**
+```powershell
+# From project root
+py -3.11 -m venv .venv
+. .\.venv\Scripts\Activate.ps1
+# Upgrade packaging tools
+python -m pip install --upgrade pip setuptools wheel
+# Install project dependencies
+python -m pip install -r .\requirements.txt
+```
+
+Notes:
+- If you use system Python 3.13, you may hit build errors for `scikit-learn`/`numpy`/`scipy` on Windows; prefer Python 3.11 or conda as above.
+
+**5) Run tests**
+```powershell
+# Run full test suite
+python -m pytest -q
+# Run a single test file
+python -m pytest tests/test_features.py -q
+# Run a single test function
+python -m pytest tests/test_features.py::test_char_vectorizer_builds -q
+```
+
+**6) Train sample model (creates artifacts)**
+```powershell
+# Trains on small bundled sample dataset and writes artifacts/
+python -m src.models.training_pipeline sample
+```
+Outputs:
+- `artifacts/sample_language_svm.joblib` — trained model
+- `artifacts/*.metrics.json` — metrics JSON
+- `artifacts/*.confusion.png` — confusion matrix plot
+
+**7) Quick inference (command line)**
+```powershell
+python -c "from src.models.inference import load_pipeline, predict_language; p=load_pipeline(); print(predict_language('Hello world', pipeline=p))"
+```
+
+**8) Run the Streamlit UI**
+```powershell
+streamlit run ui/app.py
+```
+
+**Troubleshooting**
+- Error building `scikit-learn` or `numpy` on Windows: this usually means pip attempted to compile packages from source because no compatible wheel exists for your Python version. Solutions:
+  - Use Python 3.11 (recommended) or conda (install prebuilt binaries).
+  - Install Microsoft Visual C++ Build Tools, CMake and Fortran toolchains — only for advanced users; building `scipy` on Windows is complex.
+- If pytest reports `ModuleNotFoundError: No module named 'src'`, ensure you run pytest from the project root or set `PYTHONPATH`:
+```powershell
+$env:PYTHONPATH = '.'
+python -m pytest -q
+```
+
 # Typological-Language-Classification

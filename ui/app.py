@@ -189,7 +189,7 @@ else:
         metadata = LANGUAGE_METADATA.get(result["top_language"], {})
         if metadata:
             st.info(
-                f"{metadata.get('name')} · {metadata.get('family')}\n\n"
+                f"{metadata.get('name')}\n\n"
                 f"_Sample phrase:_ {metadata.get('sample_text')}"
             )
         ranked_df = pd.DataFrame(result["ranked"])
