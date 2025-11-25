@@ -25,6 +25,7 @@ Thumbs.db
 # Project specific
 *.joblib
 *.png
+!artifacts/*.png
 *.json
 !requirements.txt
 !**/languages.yaml
