@@ -4,11 +4,14 @@ Generate visualization plots for the language classification dataset.
 import sys
 from pathlib import Path
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.decomposition import PCA
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 
@@ -17,7 +20,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from src.config.settings import PROCESSED_DATA_DIR, TARGET_LANGUAGES
+from src.config.settings import ARTIFACTS_DIR, PROCESSED_DATA_DIR, TARGET_LANGUAGES
 from src.features.linguistic_features import LinguisticStatsTransformer
 
 # Set style
@@ -135,6 +138,83 @@ plt.tight_layout()
 plt.savefig(PROJECT_ROOT / "artifacts" / "pca_plot.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("   Saved to artifacts/pca_plot.png")
+
+# 6. Confusion matrix
+print("\n6. Generating confusion matrix...")
+# Try to load a trained model
+model_paths = [
+    ARTIFACTS_DIR / "custom_language_svm.joblib",
+    ARTIFACTS_DIR / "sample_language_svm.joblib",
+]
+
+pipeline = None
+for model_path in model_paths:
+    if model_path.exists():
+        try:
+            pipeline = joblib.load(model_path)
+            print(f"   Loaded model from {model_path.name}")
+            break
+        except Exception as e:
+            print(f"   Could not load {model_path.name}: {e}")
+            continue
+
+if pipeline is None:
+    print("   Warning: No trained model found. Training a quick model for confusion matrix...")
+    # Train a quick model on training data for visualization
+    from src.models.training_pipeline import build_pipeline
+    from src.config.settings import TrainingConfig
+    
+    config = TrainingConfig()
+    pipeline = build_pipeline(config)
+    pipeline.fit(df["text"], df["language"])
+
+# Load test data
+test_path = PROCESSED_DATA_DIR / "wili_subset_test.csv"
+if test_path.exists():
+    test_df = pd.read_csv(test_path)
+    test_df = test_df[test_df["language"].isin(TARGET_LANGUAGES)]
+    print(f"   Loaded {len(test_df)} test samples")
+else:
+    print("   Test data not found. Using validation data...")
+    val_path = PROCESSED_DATA_DIR / "wili_subset_val.csv"
+    if val_path.exists():
+        test_df = pd.read_csv(val_path)
+        test_df = test_df[test_df["language"].isin(TARGET_LANGUAGES)]
+        print(f"   Loaded {len(test_df)} validation samples")
+    else:
+        print("   No test/val data found. Using train data with split...")
+        _, test_df = train_test_split(
+            df, test_size=0.2, random_state=42, stratify=df["language"]
+        )
+        print(f"   Split {len(test_df)} samples for testing")
+
+# Make predictions
+y_true = test_df["language"].values
+y_pred = pipeline.predict(test_df["text"].values)
+
+# Get labels in sorted order
+labels = sorted(TARGET_LANGUAGES)
+
+# Compute confusion matrix
+cm = confusion_matrix(y_true, y_pred, labels=labels)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Purples",
+    xticklabels=labels,
+    yticklabels=labels,
+)
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.title("Language Classification Confusion Matrix")
+plt.tight_layout()
+plt.savefig(PROJECT_ROOT / "artifacts" / "confusion_matrix.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("   Saved to artifacts/confusion_matrix.png")
 
 print("\nAll plots generated successfully!")
 print(f"   Output directory: {PROJECT_ROOT / 'artifacts'}")
